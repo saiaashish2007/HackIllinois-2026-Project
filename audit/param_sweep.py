@@ -9,10 +9,8 @@ can be visualized as a heatmap.
 from __future__ import annotations
 
 import itertools
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from copy import deepcopy
-from dataclasses import replace
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -25,14 +23,7 @@ from pipeline.config import StrategyConfig
 from pipeline.backtest import run_backtest
 
 
-# Smaller grid = faster (9 combos vs 25)
 DEFAULT_GRID: Dict[str, List[Any]] = {
-    "fast_window": [15, 20, 30],
-    "slow_window": [80, 100, 120],
-}
-
-# Thorough grid (optional, ~25 combos)
-FULL_GRID: Dict[str, List[Any]] = {
     "fast_window": [10, 15, 20, 30, 40],
     "slow_window": [60, 80, 100, 120, 150],
 }
@@ -74,40 +65,27 @@ def run_param_sweep(
     grid: Optional[Dict[str, List[Any]]] = None,
     start: Optional[str] = None,
     end: Optional[str] = None,
-    max_workers: int = 4,
 ) -> pd.DataFrame:
     """
-    Run the full grid search in parallel. Returns a DataFrame where each
+    Run the full grid search (sequential). Returns a DataFrame where each
     row is one param combination and the columns are the param values +
     backtest metrics.
     """
     grid = grid or DEFAULT_GRID
     param_names = sorted(grid.keys())
-    combos = []
-    for combo in itertools.product(*(grid[p] for p in param_names)):
+    combos = list(itertools.product(*(grid[p] for p in param_names)))
+
+    rows: List[Dict[str, Any]] = []
+    for combo in combos:
         overrides = dict(zip(param_names, combo))
-        if overrides.get("fast_window", 0) < overrides.get("slow_window", float("inf")):
-            combos.append(overrides)
 
-    if not combos:
-        return pd.DataFrame()
+        if overrides.get("fast_window", 0) >= overrides.get("slow_window", float("inf")):
+            continue
 
-    def _run(overrides: Dict[str, Any]) -> Dict[str, Any]:
-        return run_single_combo(base_config, overrides, start=start, end=end)
+        result = run_single_combo(base_config, overrides, start=start, end=end)
+        rows.append(result)
 
-    workers = min(max_workers, len(combos))
-    rows: List[Dict[str, Any]] = [None] * len(combos)  # type: ignore
-
-    with ThreadPoolExecutor(max_workers=workers) as ex:
-        future_to_idx = {ex.submit(_run, overrides): i for i, overrides in enumerate(combos)}
-        for future in as_completed(future_to_idx):
-            idx = future_to_idx[future]
-            try:
-                rows[idx] = future.result()
-            except Exception as exc:
-                rows[idx] = {"error": str(exc), **combos[idx]}
-
-    return pd.DataFrame([r for r in rows if r is not None])
+    return pd.DataFrame(rows)
 
 
 def param_stability_score(sweep_df: pd.DataFrame, metric: str = "sharpe") -> float:

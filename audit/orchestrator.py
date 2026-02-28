@@ -10,7 +10,6 @@ This is the single function you call (or that Streamlit calls).
 from __future__ import annotations
 
 import json
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -103,14 +102,13 @@ def run_full_audit(
         audit["regime_metrics"] = {}
         audit["regime_counts"] = {}
 
-    # 3 & 4. Parameter sweep + stress tests in parallel
-    print("[audit] Running parameter sweep and stress tests in parallel ...")
-    sweep_df = stress_df = pd.DataFrame()
-    with ThreadPoolExecutor(max_workers=2) as ex:
-        f_sweep = ex.submit(run_param_sweep, config, grid=grid, start=start, end=end)
-        f_stress = ex.submit(run_stress_tests, config, start=start, end=end)
-        sweep_df = f_sweep.result()
-        stress_df = f_stress.result()
+    # 3. Parameter sweep
+    print("[audit] Running parameter sweep locally ...")
+    sweep_df = run_param_sweep(config, grid=grid, start=start, end=end)
+
+    # 4. Stress tests
+    print("[audit] Running stress tests locally ...")
+    stress_df = run_stress_tests(config, start=start, end=end)
 
     audit["gpu_ml"] = {"gpu_used": False, "reason": "Local execution"}
 

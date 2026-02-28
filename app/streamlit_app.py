@@ -299,32 +299,6 @@ def _dollar(val, fallback="N/A"):
         return fallback
 
 
-@st.cache_data(ttl=3600)
-def _monte_carlo_projection(
-    daily_rets_tuple: tuple,
-    end_val: float,
-    proj_days: int,
-    n_sims: int = 1500,
-) -> tuple:
-    """Cached Monte Carlo projection. Returns (p5, p10, p25, p50, p75, p90, p95, prob_profit, prob_2x, prob_loss_20)."""
-    daily_rets = np.array(daily_rets_tuple)
-    rng = np.random.default_rng(42)
-    sampled = rng.choice(daily_rets, size=(n_sims, proj_days), replace=True)
-    cum_paths = end_val * np.cumprod(1 + sampled, axis=1)
-    finals = cum_paths[:, -1]
-    p5 = np.percentile(cum_paths, 5, axis=0)
-    p10 = np.percentile(cum_paths, 10, axis=0)
-    p25 = np.percentile(cum_paths, 25, axis=0)
-    p50 = np.percentile(cum_paths, 50, axis=0)
-    p75 = np.percentile(cum_paths, 75, axis=0)
-    p90 = np.percentile(cum_paths, 90, axis=0)
-    p95 = np.percentile(cum_paths, 95, axis=0)
-    prob_profit = float((finals >= end_val).sum()) / n_sims * 100
-    prob_2x = float((finals >= end_val * 2).sum()) / n_sims * 100
-    prob_loss_20 = float((finals <= end_val * 0.8).sum()) / n_sims * 100
-    return (p5, p10, p25, p50, p75, p90, p95, prob_profit, prob_2x, prob_loss_20)
-
-
 def render_audit(audit: dict, prev_audit: dict = None) -> None:
     surv = audit.get("survivability", {})
     score = surv.get("score", 0)
@@ -433,7 +407,7 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
                     "Current": f"{new_pct}%",
                     "Change": f"{emoji} {diff_str}",
                 })
-            st.dataframe(pd.DataFrame(comp_rows), width="stretch", hide_index=True)
+            st.dataframe(pd.DataFrame(comp_rows), use_container_width=True, hide_index=True)
 
             # Key metric deltas
             st.markdown("**Key metrics:**")
@@ -669,7 +643,7 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
             # Projection params from the form (or defaults)
             proj_months = audit.get("_projection_months", 12)
             proj_days = int(proj_months * 21)
-            n_sims = 1500
+            n_sims = 2000
 
             st.markdown(f"""
             <div style="text-align:center;padding:1.2rem 0 0.4rem 0;">
@@ -682,10 +656,20 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
             </div>
             """, unsafe_allow_html=True)
 
-            # Monte Carlo simulation (cached for same equity curve)
-            p5, p10, p25, p50, p75, p90, p95, prob_profit, prob_2x, prob_loss_20 = _monte_carlo_projection(
-                tuple(daily_rets.flat), end_val, proj_days, n_sims
-            )
+            # Monte Carlo simulation
+            rng = np.random.default_rng(42)
+            sampled = rng.choice(daily_rets, size=(n_sims, proj_days), replace=True)
+            cum_paths = end_val * np.cumprod(1 + sampled, axis=1)
+            p5 = np.percentile(cum_paths, 5, axis=0)
+            p10 = np.percentile(cum_paths, 10, axis=0)
+            p25 = np.percentile(cum_paths, 25, axis=0)
+            p50 = np.percentile(cum_paths, 50, axis=0)
+            p75 = np.percentile(cum_paths, 75, axis=0)
+            p90 = np.percentile(cum_paths, 90, axis=0)
+            p95 = np.percentile(cum_paths, 95, axis=0)
+            prob_profit = float((cum_paths[:, -1] >= end_val).sum()) / n_sims * 100
+            prob_2x = float((cum_paths[:, -1] >= end_val * 2).sum()) / n_sims * 100
+            prob_loss_20 = float((cum_paths[:, -1] <= end_val * 0.8).sum()) / n_sims * 100
 
             future_dates = pd.bdate_range(start=end_dt + pd.Timedelta(days=1), periods=proj_days)
             final_median = float(p50[-1])
@@ -891,7 +875,7 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
                     "Worst Drop": _pct(dd),
                     "Verdict": status,
                 })
-            st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
+            st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
             neg_regimes = [r for r, m in reg.items() if m.get("sharpe") is not None and m["sharpe"] < 0]
             if neg_regimes:
@@ -931,7 +915,7 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
                         pivot = sweep_df.pivot_table(index="slow_window", columns="fast_window", values="sharpe", aggfunc="first")
                         st.dataframe(
                             pivot.style.background_gradient(cmap="RdYlGn", axis=None).format("{:.2f}", na_rep="—"),
-                            width="stretch",
+                            use_container_width=True,
                         )
             else:
                 st.info("No sensitivity data available.")
@@ -979,7 +963,7 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
                             display_cols.append(orig)
                             renames[orig] = friendly
                     if display_cols:
-                        st.dataframe(stress_df[display_cols].rename(columns=renames), width="stretch", hide_index=True)
+                        st.dataframe(stress_df[display_cols].rename(columns=renames), use_container_width=True, hide_index=True)
             else:
                 st.info("No stress test data available.")
         ti += 1
@@ -1050,7 +1034,7 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
                         "Fold": [f"Window {i+1}" for i in range(len(cv_scores_list))],
                         "AUC Score": cv_scores_list,
                     })
-                    st.dataframe(cv_df, width="stretch", hide_index=True)
+                    st.dataframe(cv_df, use_container_width=True, hide_index=True)
                     st.markdown(
                         "Each fold trains on all data *before* the test window — "
                         "no future information leaks into training. This is the gold standard "
@@ -1204,7 +1188,7 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
 
     # ── Back / Re-run button ──────────────────────────────────
     bc1, bc2, bc3 = st.columns([1, 2, 1])
-    if bc2.button("Adjust Parameters & Run Again", type="secondary", width="stretch", key="back_btn_bottom"):
+    if bc2.button("Adjust Parameters & Run Again", type="secondary", use_container_width=True, key="back_btn_bottom"):
         st.session_state.pop("audit_result", None)
         st.session_state.pop("audit_mode", None)
         st.rerun()
@@ -1213,7 +1197,7 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
 def _render_back_button(key_suffix: str = "top"):
     """Show a compact back-to-form button above results."""
     cols = st.columns([3, 1])
-    if cols[1].button("Change Parameters", key=f"back_{key_suffix}", width="stretch"):
+    if cols[1].button("Change Parameters", key=f"back_{key_suffix}", use_container_width=True):
         st.session_state.pop("audit_result", None)
         st.session_state.pop("audit_mode", None)
         st.rerun()
@@ -1319,14 +1303,9 @@ if mode == "Test a New Strategy":
                                     help="Target yearly volatility. Strategy sizes positions to aim for this.")
         openai_key = st.text_input("OpenAI API key (for AI-written report)", type="password",
                                     help="Optional. Produces a richer narrative analysis.")
-        thorough_sweep = st.checkbox(
-            "Thorough param sweep (25 combos, slower)",
-            value=False,
-            help="Default uses 9 param combos for speed. Check for full 25-combo grid.",
-        )
 
     # ── Run button ────────────────────────────────────────────
-    if st.button("Analyze This Strategy", type="primary", width="stretch"):
+    if st.button("Analyze This Strategy", type="primary", use_container_width=True):
         if not symbols:
             st.error("Please select at least one stock.")
             st.stop()
@@ -1353,17 +1332,12 @@ if mode == "Test a New Strategy":
             cfg.ml_enabled = bool(ml_enabled)
 
             try:
-                grid = (
-                    {"fast_window": [10, 15, 20, 30, 40], "slow_window": [60, 80, 100, 120, 150]}
-                    if thorough_sweep else None
-                )
                 result = run_full_audit(
                     cfg,
                     start=str(start_date),
                     end=str(end_date) if end_date else None,
                     openai_api_key=openai_key if openai_key else None,
                     initial_capital=float(initial_capital),
-                    param_grid=grid,
                 )
             except RuntimeError as e:
                 st.error(
@@ -1460,7 +1434,7 @@ elif mode == "Describe Your Strategy":
                                        help="Without a key, we use keyword matching. With a key, GPT interprets your description.")
 
     # ── Single-click: parse + run ──────────────────────────────
-    if strategy_text and st.button("Show Me the Future", type="primary", width="stretch"):
+    if strategy_text and st.button("Show Me the Future", type="primary", use_container_width=True):
         from audit.strategy_parser import parse_strategy_text
 
         with st.spinner("Reading your strategy ..."):
@@ -1724,10 +1698,10 @@ elif mode == "Check My Portfolio":
             st.stop()
 
         st.subheader("Preview")
-        st.dataframe(equity_df.head(5), width="stretch", hide_index=True)
+        st.dataframe(equity_df.head(5), use_container_width=True, hide_index=True)
         st.line_chart(equity_df.set_index("date")["portfolio_value"])
 
-        if st.button("Analyze My Portfolio", type="primary", width="stretch"):
+        if st.button("Analyze My Portfolio", type="primary", use_container_width=True):
             with st.spinner("Analyzing your portfolio ..."):
                 from audit.portfolio_upload import run_upload_audit
 
