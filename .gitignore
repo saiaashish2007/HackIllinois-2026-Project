@@ -1,0 +1,20 @@
+# Python / virtualenv
+.venv/
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Generated artifacts (keep repo lightweight)
+logs/
+state/
+news_cache/
+data/
+
+# Secrets (never commit API keys)
+.streamlit/secrets.toml
+.env
+
