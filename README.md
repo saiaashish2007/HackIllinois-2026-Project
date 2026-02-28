@@ -145,10 +145,18 @@ streamlit run app/streamlit_app.py
 ```
 Shows: equity curve, regime breakdown, parameter heatmap, stress-test bar chart, and the AI report.
 
-### Modal (parallel cloud execution, optional)
+### Deploy publicly (Streamlit Community Cloud)
+
+1. Push this repo to GitHub
+2. Go to [share.streamlit.io](https://share.streamlit.io) → New app
+3. Select repo, set main file: `app/streamlit_app.py`
+4. Add `OPENAI_API_KEY` in Secrets (optional — for LLM reports)
+
+### Run locally
+
 ```bash
-pip install modal && modal token new
-modal run modal_app/remote.py
+pip install -r requirements.txt
+streamlit run app/streamlit_app.py
 ```
 
 ### Files
@@ -159,7 +167,6 @@ modal run modal_app/remote.py
 - `audit/llm_report.py` — LLM narrative generator (OpenAI or template)
 - `audit/orchestrator.py` — end-to-end audit runner
 - `app/streamlit_app.py` — Streamlit dashboard
-- `modal_app/remote.py` — Modal wrappers for parallel execution
 
 ## Extending
 - Add/remove tickers and tweak parameters in `pipeline/config.py`.

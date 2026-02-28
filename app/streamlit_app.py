@@ -261,35 +261,14 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 mode = PAGE_KEY_MAP.get(_nav_selection, "Test a New Strategy")
 
-# ── Check Modal availability ──────────────────────────────────────
-try:
-    import modal as _modal_check  # noqa: F401
-    MODAL_AVAILABLE = True
-except ImportError:
-    MODAL_AVAILABLE = False
-
 # ── Hero header (below nav) ──────────────────────────────────────
-hero_col, badge_col = st.columns([4, 1])
-with hero_col:
-    st.markdown('<div class="hero-title">Strategy Shield AI</div>', unsafe_allow_html=True)
-    st.markdown('<div class="hero-subtitle">Find out if your trading strategy is built to last — before you risk real money.</div>', unsafe_allow_html=True)
-with badge_col:
-    if MODAL_AVAILABLE:
-        st.markdown(
-            '<div style="text-align:right;padding-top:0.8rem;">'
-            '<span style="background:linear-gradient(135deg,#06b6d4,#8b5cf6);color:#fff;'
-            'padding:6px 14px;border-radius:20px;font-size:0.82rem;font-weight:700;'
-            'letter-spacing:0.3px;">Powered by Modal</span></div>',
-            unsafe_allow_html=True,
-        )
-    else:
-        st.markdown(
-            '<div style="text-align:right;padding-top:0.8rem;">'
-            '<span style="background:#e5e7eb;color:#888;'
-            'padding:6px 14px;border-radius:20px;font-size:0.82rem;font-weight:600;'
-            'letter-spacing:0.3px;">Running Locally</span></div>',
-            unsafe_allow_html=True,
-        )
+st.markdown('<div class="hero-title">Strategy Shield AI</div>', unsafe_allow_html=True)
+st.markdown('<div class="hero-subtitle">Find out if your trading strategy is built to last — before you risk real money.</div>', unsafe_allow_html=True)
+with st.expander("⏱️ App loading slowly?", expanded=False):
+    st.caption(
+        "Free-hosted apps sleep when idle. The first visit can take 30–60 seconds to wake up. "
+        "If the page is blank, wait a moment or refresh once — then it should be snappy."
+    )
 
 
 # =====================================================================
@@ -318,6 +297,32 @@ def _dollar(val, fallback="N/A"):
         return f"${v:,.2f}"
     except (TypeError, ValueError):
         return fallback
+
+
+@st.cache_data(ttl=3600)
+def _monte_carlo_projection(
+    daily_rets_tuple: tuple,
+    end_val: float,
+    proj_days: int,
+    n_sims: int = 1500,
+) -> tuple:
+    """Cached Monte Carlo projection. Returns (p5, p10, p25, p50, p75, p90, p95, prob_profit, prob_2x, prob_loss_20)."""
+    daily_rets = np.array(daily_rets_tuple)
+    rng = np.random.default_rng(42)
+    sampled = rng.choice(daily_rets, size=(n_sims, proj_days), replace=True)
+    cum_paths = end_val * np.cumprod(1 + sampled, axis=1)
+    finals = cum_paths[:, -1]
+    p5 = np.percentile(cum_paths, 5, axis=0)
+    p10 = np.percentile(cum_paths, 10, axis=0)
+    p25 = np.percentile(cum_paths, 25, axis=0)
+    p50 = np.percentile(cum_paths, 50, axis=0)
+    p75 = np.percentile(cum_paths, 75, axis=0)
+    p90 = np.percentile(cum_paths, 90, axis=0)
+    p95 = np.percentile(cum_paths, 95, axis=0)
+    prob_profit = float((finals >= end_val).sum()) / n_sims * 100
+    prob_2x = float((finals >= end_val * 2).sum()) / n_sims * 100
+    prob_loss_20 = float((finals <= end_val * 0.8).sum()) / n_sims * 100
+    return (p5, p10, p25, p50, p75, p90, p95, prob_profit, prob_2x, prob_loss_20)
 
 
 def render_audit(audit: dict, prev_audit: dict = None) -> None:
@@ -664,7 +669,7 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
             # Projection params from the form (or defaults)
             proj_months = audit.get("_projection_months", 12)
             proj_days = int(proj_months * 21)
-            n_sims = 2000
+            n_sims = 1500
 
             st.markdown(f"""
             <div style="text-align:center;padding:1.2rem 0 0.4rem 0;">
@@ -677,23 +682,12 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
             </div>
             """, unsafe_allow_html=True)
 
-            # Monte Carlo simulation
-            rng = np.random.default_rng(42)
-            sampled = rng.choice(daily_rets, size=(n_sims, proj_days), replace=True)
-            cum_paths = end_val * np.cumprod(1 + sampled, axis=1)
-
-            p5  = np.percentile(cum_paths, 5, axis=0)
-            p10 = np.percentile(cum_paths, 10, axis=0)
-            p25 = np.percentile(cum_paths, 25, axis=0)
-            p50 = np.percentile(cum_paths, 50, axis=0)
-            p75 = np.percentile(cum_paths, 75, axis=0)
-            p90 = np.percentile(cum_paths, 90, axis=0)
-            p95 = np.percentile(cum_paths, 95, axis=0)
+            # Monte Carlo simulation (cached for same equity curve)
+            p5, p10, p25, p50, p75, p90, p95, prob_profit, prob_2x, prob_loss_20 = _monte_carlo_projection(
+                tuple(daily_rets.flat), end_val, proj_days, n_sims
+            )
 
             future_dates = pd.bdate_range(start=end_dt + pd.Timedelta(days=1), periods=proj_days)
-
-            # Probability of profit
-            prob_profit = float((cum_paths[:, -1] >= end_val).sum()) / n_sims * 100
             final_median = float(p50[-1])
             final_p5 = float(p5[-1])
             final_p25 = float(p25[-1])
@@ -829,8 +823,6 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
             # ── Probability details ─────────────────────────────
             st.markdown("")
             pc1, pc2, pc3 = st.columns(3)
-            prob_2x = float((cum_paths[:, -1] >= end_val * 2).sum()) / n_sims * 100
-            prob_loss_20 = float((cum_paths[:, -1] <= end_val * 0.8).sum()) / n_sims * 100
             pc1.metric("Chance of Profit", f"{prob_profit:.0f}%",
                        help="% of simulations that end with more than you started.")
             pc2.metric("Chance of Doubling", f"{prob_2x:.1f}%",
@@ -997,7 +989,7 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
         with tabs[ti]:
             st.subheader("AI Model — Trained on GPU")
             st.markdown(
-                "An XGBoost model was trained on **NVIDIA A100 GPU** via Modal using "
+                "An XGBoost model was trained using "
                 f"**{gpu_ml.get('num_features', '?')} features** across "
                 f"**{gpu_ml.get('total_samples', gpu_ml.get('training_samples', '?')):,} data points**. "
                 "It uses time-series walk-forward validation — no future data leaks into training."
@@ -1180,17 +1172,10 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
     ti += 1
 
     st.markdown("---")
-    ran_on_modal = audit.get("_ran_on_modal", False)
-    modal_tag = (
-        '&nbsp;<span style="background:linear-gradient(135deg,#06b6d4,#8b5cf6);color:#fff;'
-        'padding:2px 10px;border-radius:12px;font-size:0.75rem;font-weight:600;">'
-        'Ran on Modal</span>'
-        if ran_on_modal else ""
-    )
     st.markdown(
         f"<div style='text-align:center;color:#aaa;font-size:0.8rem;padding:0.5rem 0 1rem;'>"
         f"Generated: {audit.get('created_at', 'N/A')} &nbsp;|&nbsp; "
-        f"Strategy: {audit.get('strategy_name', 'N/A')}{modal_tag}"
+        f"Strategy: {audit.get('strategy_name', 'N/A')}"
         f"</div>",
         unsafe_allow_html=True,
     )
@@ -1334,15 +1319,11 @@ if mode == "Test a New Strategy":
                                     help="Target yearly volatility. Strategy sizes positions to aim for this.")
         openai_key = st.text_input("OpenAI API key (for AI-written report)", type="password",
                                     help="Optional. Produces a richer narrative analysis.")
-
-        if MODAL_AVAILABLE:
-            use_modal = st.checkbox(
-                "Run on Modal cloud (faster — parallel processing)",
-                value=True,
-                help="Sends param sweeps and stress tests to Modal's cloud for parallel execution.",
-            )
-        else:
-            use_modal = False
+        thorough_sweep = st.checkbox(
+            "Thorough param sweep (25 combos, slower)",
+            value=False,
+            help="Default uses 9 param combos for speed. Check for full 25-combo grid.",
+        )
 
     # ── Run button ────────────────────────────────────────────
     if st.button("Analyze This Strategy", type="primary", use_container_width=True):
@@ -1353,12 +1334,7 @@ if mode == "Test a New Strategy":
             st.error("The fast moving average must be shorter than the slow one.")
             st.stop()
 
-        spinner_msg = (
-            "Running on NVIDIA A100 GPU via Modal — 5-year backtest, ML training, param sweep & stress tests in parallel ..."
-            if use_modal
-            else "Running analysis — testing across multiple scenarios. This may take a few minutes ..."
-        )
-        with st.spinner(spinner_msg):
+        with st.spinner("Running analysis — backtest, param sweep & stress tests. This may take a few minutes ..."):
             from pipeline.config import StrategyConfig
             from audit.orchestrator import run_full_audit
 
@@ -1377,13 +1353,15 @@ if mode == "Test a New Strategy":
             cfg.ml_enabled = bool(ml_enabled)
 
             try:
+                from audit.param_sweep import FULL_GRID
+                grid = FULL_GRID if thorough_sweep else None
                 result = run_full_audit(
                     cfg,
                     start=str(start_date),
                     end=str(end_date) if end_date else None,
                     openai_api_key=openai_key if openai_key else None,
-                    use_modal=use_modal,
                     initial_capital=float(initial_capital),
+                    param_grid=grid,
                 )
             except RuntimeError as e:
                 st.error(
@@ -1478,10 +1456,6 @@ elif mode == "Describe Your Strategy":
     with st.expander("Advanced", expanded=False):
         openai_key_nl = st.text_input("OpenAI API key (optional — for smarter parsing)", type="password", key="nl_oai",
                                        help="Without a key, we use keyword matching. With a key, GPT interprets your description.")
-        if MODAL_AVAILABLE:
-            use_modal_nl = st.checkbox("Run on Modal cloud (faster)", value=True, key="nl_modal")
-        else:
-            use_modal_nl = False
 
     # ── Single-click: parse + run ──────────────────────────────
     if strategy_text and st.button("Show Me the Future", type="primary", use_container_width=True):
@@ -1548,12 +1522,7 @@ elif mode == "Describe Your Strategy":
         """, unsafe_allow_html=True)
 
         # ── Run the full audit ─────────────────────────────────
-        spinner_nl = (
-            "Running on NVIDIA A100 GPU via Modal — 5-year backtest, ML training, param sweep & stress tests in parallel ..."
-            if use_modal_nl
-            else "Crunching the numbers — analyzing history and projecting forward ..."
-        )
-        with st.spinner(spinner_nl):
+        with st.spinner("Crunching the numbers — analyzing history and projecting forward ..."):
             from audit.orchestrator import run_full_audit
 
             try:
@@ -1562,7 +1531,6 @@ elif mode == "Describe Your Strategy":
                     start=str(start_date_nl),
                     end=str(end_date_nl),
                     openai_api_key=openai_key_nl if openai_key_nl else None,
-                    use_modal=use_modal_nl,
                     initial_capital=float(nl_capital),
                 )
             except RuntimeError as e:

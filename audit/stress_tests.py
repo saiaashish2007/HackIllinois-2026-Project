@@ -7,8 +7,9 @@ then compares the stressed metrics to the baseline.
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from copy import deepcopy
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
 
@@ -40,12 +41,13 @@ def run_stress_tests(
     *,
     start: Optional[str] = None,
     end: Optional[str] = None,
-    slippage_multiples: List[float] = [1.0, 2.0, 5.0, 10.0],
-    commission_multiples: List[float] = [1.0, 2.0, 5.0, 10.0],
-    vol_target_shocks: List[float] = [0.10, 0.15, 0.20, 0.30, 0.40],
+    slippage_multiples: List[float] = [2.0, 5.0, 10.0],
+    commission_multiples: List[float] = [2.0, 5.0, 10.0],
+    vol_target_shocks: List[float] = [0.15, 0.25, 0.35],
+    max_workers: int = 4,
 ) -> pd.DataFrame:
     """
-    Run the backtester under multiple stress scenarios:
+    Run the backtester under multiple stress scenarios in parallel.
 
     1. **Slippage stress**: multiply base slippage_bps by 2×, 5×, 10×
     2. **Commission stress**: multiply base commission_bps similarly
@@ -53,49 +55,53 @@ def run_stress_tests(
 
     Returns a DataFrame where each row is one scenario.
     """
-    rows: List[Dict[str, Any]] = []
-
-    # Baseline
-    rows.append(_run_scenario(base_config, "baseline", start=start, end=end))
-
-    # Slippage stress
+    scenarios: List[Tuple[str, StrategyConfig]] = [
+        ("baseline", base_config),
+    ]
     for mult in slippage_multiples:
-        if mult == 1.0:
-            continue
         cfg = deepcopy(base_config)
         cfg.slippage_bps = float(base_config.slippage_bps * mult)
-        rows.append(_run_scenario(cfg, f"slippage_{mult}x", start=start, end=end))
-
-    # Commission stress
+        scenarios.append((f"slippage_{mult}x", cfg))
     for mult in commission_multiples:
-        if mult == 1.0:
-            continue
         cfg = deepcopy(base_config)
         cfg.commission_bps = float(base_config.commission_bps * mult)
-        rows.append(_run_scenario(cfg, f"commission_{mult}x", start=start, end=end))
-
-    # Vol-target stress
+        scenarios.append((f"commission_{mult}x", cfg))
     for vt in vol_target_shocks:
         cfg = deepcopy(base_config)
         cfg.vol_target_annual = float(vt)
         cfg.vol_target_enabled = True
-        rows.append(_run_scenario(cfg, f"vol_target_{vt}", start=start, end=end))
-
-    # Combined worst-case: high slippage + high commission
+        scenarios.append((f"vol_target_{vt}", cfg))
     cfg = deepcopy(base_config)
     cfg.slippage_bps = float(base_config.slippage_bps * 10.0)
     cfg.commission_bps = float(base_config.commission_bps * 10.0)
-    rows.append(_run_scenario(cfg, "worst_case_costs", start=start, end=end))
-
-    # No ML filter
+    scenarios.append(("worst_case_costs", cfg))
     cfg = deepcopy(base_config)
     cfg.ml_enabled = False
-    rows.append(_run_scenario(cfg, "no_ml_filter", start=start, end=end))
-
-    # Tight position sizing
+    scenarios.append(("no_ml_filter", cfg))
     cfg = deepcopy(base_config)
     cfg.position_fraction = 0.10
-    rows.append(_run_scenario(cfg, "small_positions_10pct", start=start, end=end))
+    scenarios.append(("small_positions_10pct", cfg))
+
+    def _run(label: str, config: StrategyConfig) -> Dict[str, Any]:
+        return _run_scenario(config, label, start=start, end=end)
+
+    workers = min(max_workers, len(scenarios))
+    rows: List[Dict[str, Any]] = []
+
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        future_to_label = {
+            ex.submit(_run, label, cfg): label for label, cfg in scenarios
+        }
+        for future in as_completed(future_to_label):
+            try:
+                rows.append(future.result())
+            except Exception as exc:
+                rows.append({"scenario": future_to_label[future], "error": str(exc)})
+
+    # Restore order (baseline first, etc.)
+    label_order = [s[0] for s in scenarios]
+    by_label = {r["scenario"]: r for r in rows}
+    rows = [by_label.get(lbl, {"scenario": lbl, "error": "Failed"}) for lbl in label_order]
 
     return pd.DataFrame(rows)
 
