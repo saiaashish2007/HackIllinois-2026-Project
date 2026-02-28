@@ -111,7 +111,7 @@ FRIENDLY_COMPONENT_NAMES = {
 # ── Page setup ────────────────────────────────────────────────────
 
 st.set_page_config(
-    page_title="Strategy Shield",
+    page_title="Strategy Shield AI",
     page_icon="🔍",
     layout="wide",
     initial_sidebar_state="collapsed",
@@ -271,7 +271,7 @@ except ImportError:
 # ── Hero header (below nav) ──────────────────────────────────────
 hero_col, badge_col = st.columns([4, 1])
 with hero_col:
-    st.markdown('<div class="hero-title">Strategy Health Check</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-title">Strategy Shield AI</div>', unsafe_allow_html=True)
     st.markdown('<div class="hero-subtitle">Find out if your trading strategy is built to last — before you risk real money.</div>', unsafe_allow_html=True)
 with badge_col:
     if MODAL_AVAILABLE:
