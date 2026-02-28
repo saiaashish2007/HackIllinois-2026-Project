@@ -1353,8 +1353,10 @@ if mode == "Test a New Strategy":
             cfg.ml_enabled = bool(ml_enabled)
 
             try:
-                from audit.param_sweep import FULL_GRID
-                grid = FULL_GRID if thorough_sweep else None
+                grid = (
+                    {"fast_window": [10, 15, 20, 30, 40], "slow_window": [60, 80, 100, 120, 150]}
+                    if thorough_sweep else None
+                )
                 result = run_full_audit(
                     cfg,
                     start=str(start_date),
