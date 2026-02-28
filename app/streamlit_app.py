@@ -433,7 +433,7 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
                     "Current": f"{new_pct}%",
                     "Change": f"{emoji} {diff_str}",
                 })
-            st.dataframe(pd.DataFrame(comp_rows), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(comp_rows), width="stretch", hide_index=True)
 
             # Key metric deltas
             st.markdown("**Key metrics:**")
@@ -891,7 +891,7 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
                     "Worst Drop": _pct(dd),
                     "Verdict": status,
                 })
-            st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
 
             neg_regimes = [r for r, m in reg.items() if m.get("sharpe") is not None and m["sharpe"] < 0]
             if neg_regimes:
@@ -931,7 +931,7 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
                         pivot = sweep_df.pivot_table(index="slow_window", columns="fast_window", values="sharpe", aggfunc="first")
                         st.dataframe(
                             pivot.style.background_gradient(cmap="RdYlGn", axis=None).format("{:.2f}", na_rep="—"),
-                            use_container_width=True,
+                            width="stretch",
                         )
             else:
                 st.info("No sensitivity data available.")
@@ -979,7 +979,7 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
                             display_cols.append(orig)
                             renames[orig] = friendly
                     if display_cols:
-                        st.dataframe(stress_df[display_cols].rename(columns=renames), use_container_width=True, hide_index=True)
+                        st.dataframe(stress_df[display_cols].rename(columns=renames), width="stretch", hide_index=True)
             else:
                 st.info("No stress test data available.")
         ti += 1
@@ -1050,7 +1050,7 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
                         "Fold": [f"Window {i+1}" for i in range(len(cv_scores_list))],
                         "AUC Score": cv_scores_list,
                     })
-                    st.dataframe(cv_df, use_container_width=True, hide_index=True)
+                    st.dataframe(cv_df, width="stretch", hide_index=True)
                     st.markdown(
                         "Each fold trains on all data *before* the test window — "
                         "no future information leaks into training. This is the gold standard "
@@ -1204,7 +1204,7 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
 
     # ── Back / Re-run button ──────────────────────────────────
     bc1, bc2, bc3 = st.columns([1, 2, 1])
-    if bc2.button("Adjust Parameters & Run Again", type="secondary", use_container_width=True, key="back_btn_bottom"):
+    if bc2.button("Adjust Parameters & Run Again", type="secondary", width="stretch", key="back_btn_bottom"):
         st.session_state.pop("audit_result", None)
         st.session_state.pop("audit_mode", None)
         st.rerun()
@@ -1213,7 +1213,7 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
 def _render_back_button(key_suffix: str = "top"):
     """Show a compact back-to-form button above results."""
     cols = st.columns([3, 1])
-    if cols[1].button("Change Parameters", key=f"back_{key_suffix}", use_container_width=True):
+    if cols[1].button("Change Parameters", key=f"back_{key_suffix}", width="stretch"):
         st.session_state.pop("audit_result", None)
         st.session_state.pop("audit_mode", None)
         st.rerun()
@@ -1326,7 +1326,7 @@ if mode == "Test a New Strategy":
         )
 
     # ── Run button ────────────────────────────────────────────
-    if st.button("Analyze This Strategy", type="primary", use_container_width=True):
+    if st.button("Analyze This Strategy", type="primary", width="stretch"):
         if not symbols:
             st.error("Please select at least one stock.")
             st.stop()
@@ -1460,7 +1460,7 @@ elif mode == "Describe Your Strategy":
                                        help="Without a key, we use keyword matching. With a key, GPT interprets your description.")
 
     # ── Single-click: parse + run ──────────────────────────────
-    if strategy_text and st.button("Show Me the Future", type="primary", use_container_width=True):
+    if strategy_text and st.button("Show Me the Future", type="primary", width="stretch"):
         from audit.strategy_parser import parse_strategy_text
 
         with st.spinner("Reading your strategy ..."):
@@ -1724,10 +1724,10 @@ elif mode == "Check My Portfolio":
             st.stop()
 
         st.subheader("Preview")
-        st.dataframe(equity_df.head(5), use_container_width=True, hide_index=True)
+        st.dataframe(equity_df.head(5), width="stretch", hide_index=True)
         st.line_chart(equity_df.set_index("date")["portfolio_value"])
 
-        if st.button("Analyze My Portfolio", type="primary", use_container_width=True):
+        if st.button("Analyze My Portfolio", type="primary", width="stretch"):
             with st.spinner("Analyzing your portfolio ..."):
                 from audit.portfolio_upload import run_upload_audit
 
