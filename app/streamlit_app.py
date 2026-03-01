@@ -123,7 +123,15 @@ st.markdown("""
     [data-testid="collapsedControl"] { display: none; }
     section[data-testid="stSidebar"] { display: none; }
 
-    /* Global spacing — more breathing room everywhere */
+    /* NEXUS-style: pristine black & clean — root overrides */
+    .stApp, [data-testid="stAppViewContainer"] {
+        background-color: #0d0d0d !important;
+    }
+    .main .block-container {
+        background-color: transparent !important;
+    }
+
+    /* Global spacing */
     .block-container {
         padding-top: 2.5rem !important;
         padding-bottom: 3rem !important;
@@ -135,26 +143,25 @@ st.markdown("""
         gap: 1.5rem !important;
     }
 
-    /* hero title */
+    /* hero — white title, orange accent, light grey subtitle */
     .hero-title {
         font-size: 2.6rem;
         font-weight: 900;
         letter-spacing: -0.5px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
         margin-bottom: 0;
         line-height: 1.15;
         margin-top: 1.5rem;
     }
     .hero-subtitle {
         font-size: 1.05rem;
-        color: #888;
+        color: #999 !important;
         margin-top: 0.4rem;
         margin-bottom: 1.2rem;
     }
 
-    /* top nav — spaced-out bold text links */
+    /* top nav — white text, orange for active */
     .top-nav-radio [role="radiogroup"] {
         gap: 15.0rem !important;
         justify-content: center;
@@ -165,14 +172,13 @@ st.markdown("""
         padding: 0 !important;
         margin: 0 !important;
     }
-    /* hide radio circles */
     .top-nav-radio [data-baseweb="radio"] > div:first-child { display: none !important; }
     .top-nav-radio label {
         display: block;
         padding: 0.6rem 0.2rem !important;
         font-weight: 700;
         font-size: 1.15rem;
-        color: #555;
+        color: #999 !important;
         cursor: pointer;
         transition: color 0.15s, border-bottom 0.15s;
         border-bottom: 3px solid transparent;
@@ -180,14 +186,14 @@ st.markdown("""
         text-align: center;
     }
     .top-nav-radio label:hover {
-        color: #667eea;
+        color: #e67e22 !important;
     }
     .top-nav-radio label[data-checked="true"],
     .top-nav-radio [aria-checked="true"] + label,
     .top-nav-radio label:has(input:checked) {
-        color: #667eea !important;
-        -webkit-text-fill-color: #667eea;
-        border-bottom-color: #667eea;
+        color: #e67e22 !important;
+        -webkit-text-fill-color: #e67e22 !important;
+        border-bottom-color: #e67e22;
         font-weight: 800;
     }
 
@@ -201,82 +207,137 @@ st.markdown("""
     .grade-label {
         font-size: 1.1rem;
         text-align: center;
-        color: #888;
+        color: #999 !important;
         font-weight: 500;
     }
     .help-text {
         font-size: 0.83rem;
-        color: #999;
+        color: #888 !important;
         margin-top: -8px;
     }
 
-    /* section cards — more padding, more margin */
+    /* section cards — dark grey, subtle border */
     .section-card {
-        background: #fafbfe;
-        border: 1px solid #e8ecf4;
+        background: #1a1a1a !important;
+        border: 1px solid #2a2a2a !important;
         border-radius: 14px;
         padding: 1.8rem 2rem;
         margin-bottom: 1.8rem;
     }
 
-    /* metric polish — spacing and typography */
+    /* metric polish — dark cards */
     [data-testid="stMetric"] {
-        padding: 0.6rem 0.5rem !important;
+        padding: 0.8rem 0.6rem !important;
         margin-bottom: 0.4rem !important;
+        background: #1a1a1a !important;
+        border-radius: 10px !important;
+        border: 1px solid #2a2a2a !important;
     }
     [data-testid="stMetricValue"] {
         font-size: 1.8rem !important;
         font-weight: 800 !important;
     }
 
-    /* subheaders — more vertical space */
+    /* subheaders — light text */
     [data-testid="stMarkdown"] h3, [data-testid="stMarkdown"] h4 {
         margin-top: 2rem !important;
         margin-bottom: 0.8rem !important;
+        color: #f0f0f0 !important;
     }
     [data-testid="stMarkdown"] h3:first-of-type { margin-top: 1rem !important; }
+    [data-testid="stMarkdown"] p, [data-testid="stMarkdown"] li {
+        color: #b0b0b0 !important;
+    }
 
-    /* divider softer + more margin */
+    /* divider — subtle dark line */
     hr {
-        border-color: #e8ecf4 !important;
+        border-color: #2a2a2a !important;
         margin: 2rem 0 !important;
     }
 
-    /* buttons */
+    /* buttons — orange primary */
     .stButton > button[kind="primary"] {
         border-radius: 10px;
         font-weight: 700;
         font-size: 1rem;
         padding: 0.8rem 1.8rem;
+        background-color: #e67e22 !important;
+        border-color: #e67e22 !important;
+    }
+    .stButton > button[kind="primary"]:hover {
+        background-color: #d35400 !important;
+        border-color: #d35400 !important;
     }
 
-    /* tabs styling — more padding */
+    /* tabs — dark, orange active */
     .stTabs [data-baseweb="tab-list"] {
         gap: 12px;
         margin-bottom: 1.2rem;
+        background: transparent !important;
     }
     .stTabs [data-baseweb="tab"] {
         border-radius: 8px 8px 0 0;
         font-weight: 600;
         padding: 0.6rem 1rem;
+        color: #999 !important;
+    }
+    .stTabs [data-baseweb="tab"][aria-selected="true"] {
+        color: #e67e22 !important;
+        background: #1a1a1a !important;
     }
     .stTabs [data-baseweb="tab-panel"] {
         padding-top: 1.2rem !important;
     }
 
-    /* expander / info / success / warning — more padding */
+    /* expander / alerts — dark */
     [data-testid="stExpander"] > details {
         margin: 1rem 0 !important;
+        background: #1a1a1a !important;
+        border: 1px solid #2a2a2a !important;
+        border-radius: 10px !important;
     }
     [data-testid="stAlert"] {
         margin: 1.2rem 0 !important;
         padding: 1rem 1.2rem !important;
+        border-radius: 10px !important;
     }
 
-    /* columns — more gap between columns */
+    /* inputs, sliders, selects — dark */
+    [data-baseweb="input"], [data-baseweb="textarea"] {
+        background-color: #1a1a1a !important;
+        border-color: #2a2a2a !important;
+        color: #f0f0f0 !important;
+    }
+    [data-baseweb="select"] > div {
+        background-color: #1a1a1a !important;
+        border-color: #2a2a2a !important;
+    }
+
+    /* radio, checkbox labels */
+    label, .stRadio label, .stCheckbox label {
+        color: #b0b0b0 !important;
+    }
+
+    /* columns */
     [data-testid="column"] {
         padding-left: 0.75rem !important;
         padding-right: 0.75rem !important;
+    }
+
+    /* dataframes */
+    [data-testid="stDataFrame"] {
+        border: 1px solid #2a2a2a !important;
+        border-radius: 10px !important;
+    }
+
+    /* captions & code blocks */
+    .stCaption, [data-testid="stCaptionContainer"] {
+        color: #999 !important;
+    }
+    code, .stCodeBlock {
+        background-color: #1a1a1a !important;
+        color: #e0e0e0 !important;
+        border: 1px solid #2a2a2a !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -367,11 +428,11 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
     color = GRADE_COLORS.get(grade, "#888")
 
     st.markdown(f"""
-    <div style="background:linear-gradient(135deg,#f8f9fc,#eef1f8);border:1px solid #e0e4ee;
+    <div style="background:#1a1a1a;border:1px solid #2a2a2a;
                 border-radius:18px;padding:2.2rem 2.5rem;margin-bottom:1.8rem;text-align:center;">
         <div style="display:flex;justify-content:center;align-items:center;gap:3rem;flex-wrap:wrap;">
             <div>
-                <div class="big-score" style="color:{color}">{score}<span style="font-size:1.4rem;color:#aaa">/100</span></div>
+                <div class="big-score" style="color:{color}">{score}<span style="font-size:1.4rem;color:#888">/100</span></div>
                 <div class="grade-label">Survivability Score</div>
             </div>
             <div>
@@ -684,10 +745,10 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
 
             st.markdown(f"""
             <div style="text-align:center;padding:1.2rem 0 0.4rem 0;">
-                <div style="font-size:1.6rem;font-weight:800;color:#1a1a2e;letter-spacing:-0.5px;">
+                <div style="font-size:1.6rem;font-weight:800;color:#f0f0f0;letter-spacing:-0.5px;">
                     What Could Your {_dollar(capital)} Become?
                 </div>
-                <div style="font-size:1rem;color:#666;margin-top:0.3rem;">
+                <div style="font-size:1rem;color:#999;margin-top:0.3rem;">
                     {proj_months}-month forward projection based on {len(daily_rets)} days of strategy data
                 </div>
             </div>
@@ -720,22 +781,22 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
             prob_color = "#2ecc71" if prob_profit >= 65 else "#f39c12" if prob_profit >= 45 else "#e74c3c"
             prob_emoji = "Strong odds" if prob_profit >= 65 else "Coin-flip territory" if prob_profit >= 45 else "Risky"
             st.markdown(f"""
-            <div style="background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:2px solid {prob_color}33;
+            <div style="background:#1a1a1a;border:2px solid {prob_color}44;
                         border-radius:16px;padding:1.5rem 2rem;margin:1rem 0;text-align:center;">
                 <div style="display:flex;justify-content:center;align-items:center;gap:3rem;flex-wrap:wrap;">
                     <div>
                         <div style="font-size:3rem;font-weight:900;color:{prob_color};line-height:1;">
                             {prob_profit:.0f}%
                         </div>
-                        <div style="font-size:0.9rem;color:#666;font-weight:600;margin-top:0.3rem;">
+                        <div style="font-size:0.9rem;color:#999;font-weight:600;margin-top:0.3rem;">
                             Chance of Profit
                         </div>
                     </div>
                     <div style="text-align:left;">
-                        <div style="font-size:1.1rem;font-weight:700;color:#333;">
+                        <div style="font-size:1.1rem;font-weight:700;color:#e0e0e0;">
                             {prob_emoji} over {proj_months} months
                         </div>
-                        <div style="font-size:0.85rem;color:#888;margin-top:0.25rem;">
+                        <div style="font-size:0.85rem;color:#999;margin-top:0.25rem;">
                             {n_sims:,} simulated paths &bull; Median outcome: <b style="color:{prob_color}">{_dollar(final_median)}</b>
                             ({'+' if med_change >= 0 else ''}{med_change:.1f}%)
                         </div>
@@ -746,38 +807,38 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
 
             # ── Projection chart (hero) ─────────────────────────
             fig, ax = plt.subplots(figsize=(14, 6))
-            fig.patch.set_facecolor("#fafbfe")
-            ax.set_facecolor("#fafbfe")
+            fig.patch.set_facecolor("#1a1a1a")
+            ax.set_facecolor("#1a1a1a")
 
             dollar_fmt = FuncFormatter(lambda x, _: f"${x:,.0f}")
             ax.yaxis.set_major_formatter(dollar_fmt)
 
             # Historical tail (faded context)
             hist_tail = pv.iloc[-min(90, len(pv)):]
-            ax.plot(hist_tail.index, hist_tail.values, color="#667eea",
-                    linewidth=2, alpha=0.5, label="Historical")
+            ax.plot(hist_tail.index, hist_tail.values, color="#e67e22",
+                    linewidth=2, alpha=0.6, label="Historical")
 
             # Confidence bands (layered from widest to narrowest)
-            ax.fill_between(future_dates, p5, p95, alpha=0.07, color="#e74c3c", linewidth=0)
-            ax.fill_between(future_dates, p10, p90, alpha=0.10, color="#667eea", linewidth=0)
-            ax.fill_between(future_dates, p25, p75, alpha=0.18, color="#667eea", linewidth=0, label="50% of outcomes")
+            ax.fill_between(future_dates, p5, p95, alpha=0.12, color="#e74c3c", linewidth=0)
+            ax.fill_between(future_dates, p10, p90, alpha=0.15, color="#e67e22", linewidth=0)
+            ax.fill_between(future_dates, p25, p75, alpha=0.22, color="#e67e22", linewidth=0, label="50% of outcomes")
 
             # Median path
             ax.plot(future_dates, p50, color="#2ecc71", linewidth=3, label="Expected (median)", zorder=4)
 
             # Percentile edge lines
-            ax.plot(future_dates, p5, color="#e74c3c", linewidth=1, alpha=0.4, linestyle=":")
-            ax.plot(future_dates, p95, color="#2ecc71", linewidth=1, alpha=0.4, linestyle=":")
+            ax.plot(future_dates, p5, color="#e74c3c", linewidth=1, alpha=0.5, linestyle=":")
+            ax.plot(future_dates, p95, color="#2ecc71", linewidth=1, alpha=0.5, linestyle=":")
 
             # Today divider
-            ax.axvline(end_dt, color="#667eea", linestyle="--", linewidth=1.5, alpha=0.5)
+            ax.axvline(end_dt, color="#e67e22", linestyle="--", linewidth=1.5, alpha=0.6)
             ylim = ax.get_ylim()
             ax.text(end_dt, ylim[1] - (ylim[1] - ylim[0]) * 0.02, "  Today  ",
-                    fontsize=10, fontweight="bold", color="#667eea", va="top", ha="right",
-                    bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="#667eea", alpha=0.85))
+                    fontsize=10, fontweight="bold", color="#e67e22", va="top", ha="right",
+                    bbox=dict(boxstyle="round,pad=0.3", fc="#1a1a1a", ec="#e67e22", alpha=0.95))
 
             # Starting value line
-            ax.axhline(end_val, color="#aaa", linestyle=":", linewidth=1, alpha=0.4)
+            ax.axhline(end_val, color="#666", linestyle=":", linewidth=1, alpha=0.5)
 
             # End annotations
             for label_text, val, color, y_off in [
@@ -787,28 +848,27 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
             ]:
                 pct_chg = (val / end_val - 1) * 100
                 sign_str = "+" if pct_chg >= 0 else ""
-                ax.scatter([future_dates[-1]], [val], color=color, s=50, zorder=5, edgecolors="white", linewidth=1.5)
+                ax.scatter([future_dates[-1]], [val], color=color, s=50, zorder=5, edgecolors="#1a1a1a", linewidth=1.5)
                 ax.annotate(
                     f"{label_text}\n{_dollar(val)} ({sign_str}{pct_chg:.1f}%)",
                     xy=(future_dates[-1], val),
                     xytext=(12, y_off), textcoords="offset points",
                     fontsize=9, fontweight="bold", color=color,
-                    bbox=dict(boxstyle="round,pad=0.4", fc="white", ec=color, alpha=0.92, lw=1.5),
+                    bbox=dict(boxstyle="round,pad=0.4", fc="#1a1a1a", ec=color, alpha=0.95, lw=1.5),
                     arrowprops=dict(arrowstyle="-", color=color, lw=1, alpha=0.5),
                 )
 
-            ax.set_ylabel("Portfolio Value", fontsize=12, fontweight="700", color="#333")
+            ax.set_ylabel("Portfolio Value", fontsize=12, fontweight="700", color="#b0b0b0")
             ax.set_xlabel("")
             ax.xaxis.set_major_formatter(mdates.DateFormatter("%b '%y"))
             ax.xaxis.set_major_locator(mdates.AutoDateLocator(minticks=5, maxticks=12))
             fig.autofmt_xdate(rotation=0, ha="center")
-            ax.tick_params(colors="#666", labelsize=10)
-            ax.grid(True, alpha=0.10, color="#ccc")
+            ax.tick_params(colors="#888", labelsize=10)
+            ax.grid(True, alpha=0.15, color="#444")
             for spine in ax.spines.values():
-                spine.set_visible(False)
-
-            ax.legend(loc="upper left", fontsize=10, framealpha=0.9, edgecolor="#ddd",
-                      fancybox=True, borderpad=0.8)
+                spine.set_color("#2a2a2a")
+            ax.legend(loc="upper left", fontsize=10, framealpha=0.95, facecolor="#1a1a1a", edgecolor="#2a2a2a",
+                      labelcolor="#e0e0e0", fancybox=True, borderpad=0.8)
             fig.tight_layout(pad=1.5)
 
             st.pyplot(fig)
@@ -817,7 +877,7 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
             # ── Outcome cards ───────────────────────────────────
             st.markdown(f"""
             <div style="text-align:center;padding:0.8rem 0 0.2rem 0;">
-                <div style="font-size:1.2rem;font-weight:800;color:#333;letter-spacing:-0.3px;">
+                <div style="font-size:1.2rem;font-weight:800;color:#f0f0f0;letter-spacing:-0.3px;">
                     Range of Outcomes After {proj_months} Months
                 </div>
                 <div style="font-size:0.8rem;color:#999;">Starting from {_dollar(end_val)} today</div>
@@ -1137,27 +1197,27 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
             gained = end_val_hist >= start_val
 
             fig_hist, ax_hist = plt.subplots(figsize=(13, 4.5))
-            fig_hist.patch.set_facecolor("#fafbfe")
-            ax_hist.set_facecolor("#fafbfe")
+            fig_hist.patch.set_facecolor("#1a1a1a")
+            ax_hist.set_facecolor("#1a1a1a")
 
-            ax_hist.plot(pv.index, pv.values, color="#667eea", linewidth=2)
-            ax_hist.fill_between(pv.index, pv.values, alpha=0.06, color="#667eea")
+            ax_hist.plot(pv.index, pv.values, color="#e67e22", linewidth=2)
+            ax_hist.fill_between(pv.index, pv.values, alpha=0.1, color="#e67e22")
 
             dollar_fmt_hist = FuncFormatter(lambda x, _: f"${x:,.0f}")
             ax_hist.yaxis.set_major_formatter(dollar_fmt_hist)
 
-            ax_hist.scatter([start_dt], [start_val], color="#667eea", s=80, zorder=5, edgecolors="white", linewidth=1.5)
+            ax_hist.scatter([start_dt], [start_val], color="#e67e22", s=80, zorder=5, edgecolors="#1a1a1a", linewidth=1.5)
             ax_hist.annotate(
                 f"Start\n{_dollar(start_val)}",
                 xy=(start_dt, start_val),
                 xytext=(15, 22), textcoords="offset points",
-                fontsize=10, fontweight="bold", color="#667eea",
-                arrowprops=dict(arrowstyle="->", color="#667eea", lw=1.5),
-                bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="#667eea", alpha=0.92),
+                fontsize=10, fontweight="bold", color="#e67e22",
+                arrowprops=dict(arrowstyle="->", color="#e67e22", lw=1.5),
+                bbox=dict(boxstyle="round,pad=0.3", fc="#1a1a1a", ec="#e67e22", alpha=0.95),
             )
 
             end_color = "#2ecc71" if gained else "#e74c3c"
-            ax_hist.scatter([end_dt_hist], [end_val_hist], color=end_color, s=80, zorder=5, edgecolors="white", linewidth=1.5)
+            ax_hist.scatter([end_dt_hist], [end_val_hist], color=end_color, s=80, zorder=5, edgecolors="#1a1a1a", linewidth=1.5)
             change_pct = (end_val_hist / start_val - 1) * 100 if start_val > 0 else 0
             sign_str = "+" if change_pct >= 0 else ""
             ax_hist.annotate(
@@ -1166,17 +1226,17 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
                 xytext=(-15, 22), textcoords="offset points",
                 fontsize=10, fontweight="bold", color=end_color, ha="right",
                 arrowprops=dict(arrowstyle="->", color=end_color, lw=1.5),
-                bbox=dict(boxstyle="round,pad=0.3", fc="white", ec=end_color, alpha=0.92),
+                bbox=dict(boxstyle="round,pad=0.3", fc="#1a1a1a", ec=end_color, alpha=0.95),
             )
 
-            ax_hist.set_ylabel("Portfolio Value", fontsize=11, fontweight="700", color="#333")
+            ax_hist.set_ylabel("Portfolio Value", fontsize=11, fontweight="700", color="#b0b0b0")
             ax_hist.xaxis.set_major_formatter(mdates.DateFormatter("%b '%y"))
             ax_hist.xaxis.set_major_locator(mdates.AutoDateLocator(minticks=4, maxticks=10))
             fig_hist.autofmt_xdate(rotation=0, ha="center")
-            ax_hist.tick_params(colors="#666", labelsize=10)
-            ax_hist.grid(True, alpha=0.10, color="#ccc")
+            ax_hist.tick_params(colors="#888", labelsize=10)
+            ax_hist.grid(True, alpha=0.15, color="#444")
             for spine in ax_hist.spines.values():
-                spine.set_visible(False)
+                spine.set_color("#2a2a2a")
             fig_hist.tight_layout(pad=1.5)
 
             st.pyplot(fig_hist)
@@ -1498,45 +1558,45 @@ elif mode == "Describe Your Strategy":
             risk_label, risk_color, risk_icon = "Aggressive", "#e74c3c", "🔥"
 
         st.markdown(f"""
-        <div style="background:linear-gradient(135deg,#f8f9fc,#eef1f8);border:1px solid #e0e4ee;
+        <div style="background:#1a1a1a;border:1px solid #2a2a2a;
                     border-radius:16px;padding:1.5rem 2rem;margin:1rem 0 1.5rem;">
-            <div style="font-size:1.1rem;font-weight:800;margin-bottom:1rem;color:#333;">
+            <div style="font-size:1.1rem;font-weight:800;margin-bottom:1rem;color:#f0f0f0;">
                 Here's what we understood — now projecting {nl_proj_months} months forward:
             </div>
             <div style="display:flex;gap:2rem;flex-wrap:wrap;margin-bottom:1rem;">
                 <div style="flex:1;min-width:200px;">
-                    <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;color:#888;font-weight:700;">Stocks</div>
-                    <div style="font-size:1.05rem;font-weight:700;color:#333;margin-top:2px;">{', '.join(cfg.symbols)}</div>
+                    <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;color:#999;font-weight:700;">Stocks</div>
+                    <div style="font-size:1.05rem;font-weight:700;color:#e0e0e0;margin-top:2px;">{', '.join(cfg.symbols)}</div>
                 </div>
                 <div style="flex:0 0 auto;">
-                    <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;color:#888;font-weight:700;">Risk Level</div>
+                    <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;color:#999;font-weight:700;">Risk Level</div>
                     <div style="font-size:1.05rem;font-weight:800;color:{risk_color};margin-top:2px;">{risk_icon} {risk_label}</div>
                 </div>
                 <div style="flex:0 0 auto;">
-                    <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;color:#888;font-weight:700;">Capital</div>
-                    <div style="font-size:1.05rem;font-weight:700;color:#333;margin-top:2px;">${nl_capital:,.0f}</div>
+                    <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;color:#999;font-weight:700;">Capital</div>
+                    <div style="font-size:1.05rem;font-weight:700;color:#e0e0e0;margin-top:2px;">${nl_capital:,.0f}</div>
                 </div>
                 <div style="flex:0 0 auto;">
-                    <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;color:#888;font-weight:700;">Projection</div>
-                    <div style="font-size:1.05rem;font-weight:700;color:#667eea;margin-top:2px;">{nl_proj_months} months ahead</div>
+                    <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;color:#999;font-weight:700;">Projection</div>
+                    <div style="font-size:1.05rem;font-weight:700;color:#e67e22;margin-top:2px;">{nl_proj_months} months ahead</div>
                 </div>
             </div>
             <div style="display:flex;gap:2rem;flex-wrap:wrap;">
                 <div>
-                    <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;color:#888;font-weight:700;">Strategy Type</div>
-                    <div style="font-size:0.95rem;color:#555;margin-top:2px;">{cfg.fast_window}/{cfg.slow_window}-day moving average crossover</div>
+                    <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;color:#999;font-weight:700;">Strategy Type</div>
+                    <div style="font-size:0.95rem;color:#b0b0b0;margin-top:2px;">{cfg.fast_window}/{cfg.slow_window}-day moving average crossover</div>
                 </div>
                 <div>
-                    <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;color:#888;font-weight:700;">Position Size</div>
-                    <div style="font-size:0.95rem;color:#555;margin-top:2px;">{cfg.position_fraction*100:.0f}% per stock</div>
+                    <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;color:#999;font-weight:700;">Position Size</div>
+                    <div style="font-size:0.95rem;color:#b0b0b0;margin-top:2px;">{cfg.position_fraction*100:.0f}% per stock</div>
                 </div>
                 <div>
-                    <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;color:#888;font-weight:700;">Max Exposure</div>
-                    <div style="font-size:0.95rem;color:#555;margin-top:2px;">{cfg.max_portfolio_exposure*100:.0f}% of portfolio</div>
+                    <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;color:#999;font-weight:700;">Max Exposure</div>
+                    <div style="font-size:0.95rem;color:#b0b0b0;margin-top:2px;">{cfg.max_portfolio_exposure*100:.0f}% of portfolio</div>
                 </div>
                 <div>
-                    <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;color:#888;font-weight:700;">AI Filter</div>
-                    <div style="font-size:0.95rem;color:#555;margin-top:2px;">{'Enabled' if cfg.ml_enabled else 'Disabled'}</div>
+                    <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;color:#999;font-weight:700;">AI Filter</div>
+                    <div style="font-size:0.95rem;color:#b0b0b0;margin-top:2px;">{'Enabled' if cfg.ml_enabled else 'Disabled'}</div>
                 </div>
             </div>
         </div>
