@@ -123,6 +123,18 @@ st.markdown("""
     [data-testid="collapsedControl"] { display: none; }
     section[data-testid="stSidebar"] { display: none; }
 
+    /* Global spacing — more breathing room everywhere */
+    .block-container {
+        padding-top: 2.5rem !important;
+        padding-bottom: 3rem !important;
+        padding-left: 2.5rem !important;
+        padding-right: 2.5rem !important;
+        max-width: 1400px;
+    }
+    [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlock"] {
+        gap: 1.5rem !important;
+    }
+
     /* hero title */
     .hero-title {
         font-size: 2.6rem;
@@ -133,12 +145,13 @@ st.markdown("""
         -webkit-text-fill-color: transparent;
         margin-bottom: 0;
         line-height: 1.15;
+        margin-top: 1.5rem;
     }
     .hero-subtitle {
         font-size: 1.05rem;
         color: #888;
-        margin-top: 2px;
-        margin-bottom: 0.5rem;
+        margin-top: 0.4rem;
+        margin-bottom: 1.2rem;
     }
 
     /* top nav — spaced-out bold text links */
@@ -146,7 +159,7 @@ st.markdown("""
         gap: 15.0rem !important;
         justify-content: center;
         width: 100%;
-        padding: 0.6rem 0;
+        padding: 1rem 0 1.2rem 0;
     }
     .top-nav-radio [data-baseweb="radio"] {
         padding: 0 !important;
@@ -197,39 +210,73 @@ st.markdown("""
         margin-top: -8px;
     }
 
-    /* section cards */
+    /* section cards — more padding, more margin */
     .section-card {
         background: #fafbfe;
         border: 1px solid #e8ecf4;
-        border-radius: 12px;
-        padding: 1.2rem 1.4rem;
-        margin-bottom: 1rem;
+        border-radius: 14px;
+        padding: 1.8rem 2rem;
+        margin-bottom: 1.8rem;
     }
 
-    /* metric polish */
+    /* metric polish — spacing and typography */
+    [data-testid="stMetric"] {
+        padding: 0.6rem 0.5rem !important;
+        margin-bottom: 0.4rem !important;
+    }
     [data-testid="stMetricValue"] {
         font-size: 1.8rem !important;
         font-weight: 800 !important;
     }
 
-    /* divider softer */
-    hr { border-color: #e8ecf4 !important; }
+    /* subheaders — more vertical space */
+    [data-testid="stMarkdown"] h3, [data-testid="stMarkdown"] h4 {
+        margin-top: 2rem !important;
+        margin-bottom: 0.8rem !important;
+    }
+    [data-testid="stMarkdown"] h3:first-of-type { margin-top: 1rem !important; }
+
+    /* divider softer + more margin */
+    hr {
+        border-color: #e8ecf4 !important;
+        margin: 2rem 0 !important;
+    }
 
     /* buttons */
     .stButton > button[kind="primary"] {
         border-radius: 10px;
         font-weight: 700;
         font-size: 1rem;
-        padding: 0.65rem 1.5rem;
+        padding: 0.8rem 1.8rem;
     }
 
-    /* tabs styling */
+    /* tabs styling — more padding */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
+        gap: 12px;
+        margin-bottom: 1.2rem;
     }
     .stTabs [data-baseweb="tab"] {
         border-radius: 8px 8px 0 0;
         font-weight: 600;
+        padding: 0.6rem 1rem;
+    }
+    .stTabs [data-baseweb="tab-panel"] {
+        padding-top: 1.2rem !important;
+    }
+
+    /* expander / info / success / warning — more padding */
+    [data-testid="stExpander"] > details {
+        margin: 1rem 0 !important;
+    }
+    [data-testid="stAlert"] {
+        margin: 1.2rem 0 !important;
+        padding: 1rem 1.2rem !important;
+    }
+
+    /* columns — more gap between columns */
+    [data-testid="column"] {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -319,29 +366,10 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
     st.markdown("---")
     color = GRADE_COLORS.get(grade, "#888")
 
-    # Build delta HTML if we have a previous run
-    delta_html = ""
-    if prev_score is not None and float(prev_score) != float(score):
-        delta = round(float(score) - float(prev_score), 1)
-        delta_sign = "+" if delta > 0 else ""
-        delta_color = "#2ecc71" if delta > 0 else "#e74c3c"
-        arrow = "▲" if delta > 0 else "▼"
-        prev_color = GRADE_COLORS.get(prev_grade, "#888")
-        delta_html = f"""
-        <div style="margin-top:0.8rem;padding:0.6rem 1.2rem;background:rgba(0,0,0,0.03);
-                    border-radius:10px;display:inline-block;">
-            <span style="font-size:0.85rem;color:#888;">Previous run:</span>
-            <span style="font-size:1rem;font-weight:700;color:{prev_color};margin:0 0.3rem;">{prev_score}/100 ({prev_grade})</span>
-            <span style="font-size:1rem;font-weight:800;color:{delta_color};margin-left:0.5rem;">
-                {arrow} {delta_sign}{delta} points
-            </span>
-        </div>
-        """
-
     st.markdown(f"""
     <div style="background:linear-gradient(135deg,#f8f9fc,#eef1f8);border:1px solid #e0e4ee;
-                border-radius:16px;padding:1.5rem 2rem;margin-bottom:1.2rem;text-align:center;">
-        <div style="display:flex;justify-content:center;align-items:center;gap:2rem;flex-wrap:wrap;">
+                border-radius:18px;padding:2.2rem 2.5rem;margin-bottom:1.8rem;text-align:center;">
+        <div style="display:flex;justify-content:center;align-items:center;gap:3rem;flex-wrap:wrap;">
             <div>
                 <div class="big-score" style="color:{color}">{score}<span style="font-size:1.4rem;color:#aaa">/100</span></div>
                 <div class="grade-label">Survivability Score</div>
@@ -351,9 +379,18 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
                 <div class="grade-label">{GRADE_EMOJI.get(grade, "")}</div>
             </div>
         </div>
-        {delta_html}
     </div>
     """, unsafe_allow_html=True)
+
+    # Previous run delta — use native Streamlit (no HTML) so it always renders correctly
+    if prev_score is not None and float(prev_score) != float(score):
+        delta = round(float(score) - float(prev_score), 1)
+        delta_sign = "+" if delta > 0 else ""
+        arrow = "▲" if delta > 0 else "▼"
+        with st.container():
+            d1, d2, d3 = st.columns([1, 2, 1])
+            with d2:
+                st.caption(f"Previous run: **{prev_score}/100 ({prev_grade})** — {arrow} **{delta_sign}{delta} points**")
 
     if score >= 80:
         st.success("This strategy looks robust! It holds up across different market conditions and parameter changes.")
@@ -459,7 +496,7 @@ def render_audit(audit: dict, prev_audit: dict = None) -> None:
                         col.metric(label, f"{float(new_v):.0f}{unit}" if new_v else "N/A")
 
     # ── Key numbers (plain English) ───────────────────────────
-    st.markdown("")
+    st.markdown("<div style='height:0.8rem'></div>", unsafe_allow_html=True)
     st.markdown("#### At a Glance")
 
     # Compute dollar P&L from total return
@@ -1215,6 +1252,7 @@ if mode == "Test a New Strategy":
         "best-case, and worst-case scenarios."
     )
     st.markdown("---")
+    st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
 
     # ── Stock picker ──────────────────────────────────────────
     st.subheader("1. Pick Your Stocks")
@@ -1230,6 +1268,7 @@ if mode == "Test a New Strategy":
         default=default_symbols,
         help="Type any stock ticker. These are the stocks the strategy will trade.",
     )
+    st.markdown("<div style='height:1.2rem'></div>", unsafe_allow_html=True)
 
     # ── Risk preset ───────────────────────────────────────────
     st.subheader("2. Choose Your Risk Level")
@@ -1241,6 +1280,7 @@ if mode == "Test a New Strategy":
     )
     preset = PRESETS[preset_name]
     st.info(preset["desc"])
+    st.markdown("<div style='height:1.2rem'></div>", unsafe_allow_html=True)
 
     # ── Starting capital ─────────────────────────────────────
     st.subheader("3. How Much Are You Investing?")
@@ -1252,6 +1292,7 @@ if mode == "Test a New Strategy":
         step=1000,
         help="The dollar amount you'd start with. This affects position sizes, fees, and the real P&L numbers you see.",
     )
+    st.markdown("<div style='height:1.2rem'></div>", unsafe_allow_html=True)
 
     # ── Projection horizon ────────────────────────────────────
     st.subheader("4. How Far Ahead Do You Want to Look?")
@@ -1304,6 +1345,7 @@ if mode == "Test a New Strategy":
         openai_key = st.text_input("OpenAI API key (for AI-written report)", type="password",
                                     help="Optional. Produces a richer narrative analysis.")
 
+    st.markdown("<div style='height:1.5rem'></div>", unsafe_allow_html=True)
     # ── Run button ────────────────────────────────────────────
     if st.button("Analyze This Strategy", type="primary", use_container_width=True):
         if not symbols:
@@ -1374,6 +1416,7 @@ elif mode == "Describe Your Strategy":
         "probability of profit, best/worst case scenarios, and a full risk analysis."
     )
     st.markdown("---")
+    st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
 
     # ── Input area ─────────────────────────────────────────────
     strategy_text = st.text_area(
@@ -1401,6 +1444,7 @@ elif mode == "Describe Your Strategy":
     if "_nl_prefill" in st.session_state and not strategy_text:
         strategy_text = st.session_state.pop("_nl_prefill", "")
 
+    st.markdown("<div style='height:1.2rem'></div>", unsafe_allow_html=True)
     # ── Supporting inputs ──────────────────────────────────────
     inp1, inp2 = st.columns(2)
     nl_capital = inp1.number_input(
@@ -1433,6 +1477,7 @@ elif mode == "Describe Your Strategy":
         openai_key_nl = st.text_input("OpenAI API key (optional — for smarter parsing)", type="password", key="nl_oai",
                                        help="Without a key, we use keyword matching. With a key, GPT interprets your description.")
 
+    st.markdown("<div style='height:1.5rem'></div>", unsafe_allow_html=True)
     # ── Single-click: parse + run ──────────────────────────────
     if strategy_text and st.button("Show Me the Future", type="primary", use_container_width=True):
         from audit.strategy_parser import parse_strategy_text
@@ -1543,6 +1588,7 @@ elif mode == "What-If Simulator":
         "Drag the sliders and watch the equity curve change in real time."
     )
     st.markdown("---")
+    st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
 
     # Load the most recent audit equity curve
     equity_data = None
@@ -1573,6 +1619,7 @@ elif mode == "What-If Simulator":
         st.stop()
 
     st.info(f"Using equity curve from: **{source_label}**")
+    st.markdown("<div style='height:1.2rem'></div>", unsafe_allow_html=True)
 
     # ── Sliders ───────────────────────────────────────────────
     st.markdown("#### Adjust Market Conditions")
@@ -1600,6 +1647,7 @@ elif mode == "What-If Simulator":
         min_value=0.5, max_value=3.0, value=1.0, step=0.1,
         help="1.0 = normal. Higher = your portfolio moves MORE with the market (correlated selloffs hurt more).",
     )
+    st.markdown("<div style='height:1.2rem'></div>", unsafe_allow_html=True)
 
     # ── Apply shocks ──────────────────────────────────────────
     from audit.what_if import apply_what_if, load_benchmark_returns
@@ -1668,6 +1716,7 @@ elif mode == "Check My Portfolio":
         "how it performed across different market conditions."
     )
     st.markdown("---")
+    st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
 
     st.subheader("1. Upload Your Data")
     st.markdown("Your CSV should have two columns: **date** and **portfolio value**. Example:")
@@ -1675,6 +1724,7 @@ elif mode == "Check My Portfolio":
     st.code(example_csv, language="csv")
 
     uploaded = st.file_uploader("Drop your CSV here", type=["csv"])
+    st.markdown("<div style='height:1.2rem'></div>", unsafe_allow_html=True)
 
     st.subheader("2. A Few Details")
     col_a, col_b = st.columns(2)
@@ -1733,6 +1783,7 @@ elif mode == "Check My Portfolio":
 elif mode == "View Past Results":
     st.markdown("### 📜 Past Analysis Results")
     st.markdown("---")
+    st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
 
     available = []
     for d, label in [(AUDIT_DIR, "Strategy Test"), (UPLOAD_AUDIT_DIR, "Portfolio Check")]:
